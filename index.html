@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GHOSTNET · Find the coordinated accounts and the wallets behind them</title>
+<meta name="description" content="GHOSTNET exposes coordinated accounts, fake engagement and the wallets behind them. Every finding comes with its evidence.">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff;
+    --soft:#f7f7f6;
+    --ink:#18181b;
+    --ink2:#3f3f46;
+    --mute:#71717a;
+    --faint:#a1a1aa;
+    --line:#e7e7ea;
+    --flag:#e5461f;
+    --flag-soft:rgba(229,70,31,.09);
+    --sans:"General Sans",ui-sans-serif,system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --pad:clamp(20px,4vw,64px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+  body{overflow-x:hidden}
+  ::selection{background:var(--ink);color:#fff}
+  a{color:inherit;text-decoration:none}
+  .mono{font-family:var(--mono)}
+
+  /* nav */
+  nav{position:fixed;top:8px;left:clamp(8px,2.5vw,32px);right:clamp(8px,2.5vw,32px);z-index:40;height:64px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 12px 0 22px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(24,24,27,.04)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;letter-spacing:.02em}
+  .logo svg{width:22px;height:22px}
+  .navlinks{display:flex;gap:6px;font-size:14px;color:var(--mute)}
+  .navlinks a{padding:8px 12px;border-radius:8px}
+  .navlinks a:hover{color:var(--ink);background:var(--soft)}
+  .nav-r{justify-self:end}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;padding:10px 16px;border-radius:10px;background:var(--ink);color:#fff;border:0;cursor:pointer;transition:background .2s}
+  .btn:hover{background:#000}
+  .btn.ghost{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{background:#efefee}
+
+  /* hero */
+  #hero{display:grid;grid-template-columns:minmax(380px,480px) 1fr;min-height:max(100vh,820px)}
+  .h-left{padding:112px clamp(24px,3vw,48px) 48px var(--pad);display:flex;flex-direction:column;border-right:1px solid var(--line);background:linear-gradient(180deg,var(--soft),#fff 70%)}
+  .count{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--flag);display:flex;gap:10px;flex-wrap:wrap}
+  .count b{font-weight:500;font-variant-numeric:tabular-nums}
+  .count span{color:var(--faint)}
+  h1{margin-top:26px;font-weight:600;font-size:clamp(42px,4.3vw,62px);line-height:1;letter-spacing:-.035em}
+  h1 .g{color:rgba(24,24,27,.4)}
+  .lede{margin-top:22px;font-size:16px;line-height:1.55;color:var(--mute);max-width:380px}
+
+  form.scan{margin-top:28px;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;transition:border-color .2s}
+  form.scan:focus-within{border-color:var(--ink)}
+  form.scan svg{flex:none;width:15px;height:15px;color:var(--faint)}
+  form.scan input{flex:1;min-width:0;border:0;outline:0;background:none;font-family:var(--mono);font-size:13px;color:var(--ink)}
+  form.scan input::placeholder{color:var(--faint)}
+
+  .rows{margin-top:36px;list-style:none}
+  .rows a{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;padding:15px 4px;border-top:1px solid var(--line)}
+  .rows li:last-child a{border-bottom:1px solid var(--line)}
+  .rows .n{font-size:15px;font-weight:500}
+  .rows .d{display:block;margin-top:5px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .rows .go{font-family:var(--mono);font-size:11px;color:var(--faint);transition:color .2s}
+  .rows a:hover .go{color:var(--flag)}
+  .rows a:hover .n{color:var(--ink)}
+
+  .h-right{position:relative;min-height:620px;overflow:hidden}
+  #globe{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:pan-y}
+  #globe.drag{cursor:grabbing}
+  .cap-note{position:absolute;left:28px;bottom:24px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;pointer-events:none}
+  .cap-legend{position:absolute;right:28px;bottom:24px;display:flex;gap:22px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--mute);text-transform:uppercase;pointer-events:none}
+  .cap-legend i{display:inline-block;width:6px;height:6px;margin-right:8px;vertical-align:1px;background:var(--ink)}
+  .cap-legend i.f{background:var(--flag)}
+  .cap-legend i.l{width:14px;height:1px;vertical-align:3px}
+
+  /* coverage */
+  .cover{padding:72px var(--pad);text-align:center;border-top:1px solid var(--line)}
+  .cover p{font-size:15px;color:var(--mute)}
+  .chips{margin-top:22px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:12px;padding:7px 14px;border:1px solid var(--line);border-radius:999px;color:var(--ink2)}
+  .chip.off{color:var(--faint);border-style:dashed}
+
+  /* sections */
+  section{padding:clamp(96px,14vh,150px) var(--pad)}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--flag)}
+  h2{margin-top:16px;font-weight:600;font-size:clamp(34px,3.8vw,54px);line-height:1.04;letter-spacing:-.03em}
+  h2 .g{color:rgba(24,24,27,.4)}
+  .sub{margin-top:18px;font-size:16px;line-height:1.6;color:var(--mute);max-width:560px}
+  .center{text-align:center}
+  .center .sub{margin-left:auto;margin-right:auto}
+
+  /* capabilities */
+  .grid4{margin-top:72px;display:grid;grid-template-columns:1fr 1fr}
+  .cell{padding:48px clamp(20px,3vw,48px) 0;text-align:center;height:420px;overflow:hidden}
+  .cell:nth-child(odd){border-right:1px solid var(--line)}
+  .cell:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .cell h3{font-weight:500;font-size:20px;letter-spacing:-.01em}
+  .cell > p{margin:10px auto 0;font-size:15px;line-height:1.55;color:var(--mute);max-width:400px}
+  .mock{margin:32px auto 0;width:min(400px,100%);text-align:left;-webkit-mask-image:linear-gradient(#000 45%,transparent 92%);mask-image:linear-gradient(#000 45%,transparent 92%)}
+  .card{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+  .card + .card{margin-top:8px}
+  .card .hd{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px}
+  .card .hd b{font-weight:500;color:var(--flag)}
+  .fam{display:grid;grid-template-columns:150px 1fr 26px;gap:12px;align-items:center;padding:10px 14px;font-size:13px;color:var(--ink2);border-bottom:1px solid var(--line)}
+  .fam .tr{height:3px;background:var(--soft);border-radius:2px;overflow:hidden}
+  .fam .tr div{height:100%;background:var(--ink2)}
+  .fam .tr div.hot{background:var(--flag)}
+  .fam span:last-child{font-family:var(--mono);font-size:11px;text-align:right}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-family:var(--mono);font-size:12px;background:#fff}
+  .row + .row{margin-top:6px}
+  .pill{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mute)}
+  .pill.f{color:var(--flag);border-color:rgba(229,70,31,.35);background:var(--flag-soft)}
+  .row .l{display:flex;align-items:center;gap:10px}
+  .kv{display:flex;justify-content:space-between;padding:9px 14px;font-family:var(--mono);font-size:12px;border-bottom:1px solid var(--line)}
+  .kv span:first-child{color:var(--faint)}
+  #mgraph{display:block;width:100%;height:150px}
+  .gcap{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--mute)}
+
+  /* method */
+  .split{display:grid;grid-template-columns:1fr 1.25fr;gap:clamp(40px,6vw,100px);align-items:start}
+  .tiers{border-top:1px solid var(--line)}
+  .tier{display:grid;grid-template-columns:110px 1fr;gap:20px;padding:26px 0;border-bottom:1px solid var(--line)}
+  .tier .t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;padding-top:3px}
+  .tier .ex{font-family:var(--mono);font-size:13px;line-height:1.6}
+  .tier .what{margin-top:8px;font-size:14px;line-height:1.55;color:var(--mute)}
+
+  /* timeline */
+  .tl{margin-top:72px;position:relative}
+  .tl-line{position:absolute;left:0;right:0;top:6px;height:1px;background:var(--line)}
+  .tl-fill{position:absolute;left:0;top:6px;height:1px;width:0;background:var(--ink);transition:width 2.6s cubic-bezier(.6,0,.2,1)}
+  .tl.in .tl-fill{width:100%}
+  .tl-steps{display:grid;grid-template-columns:repeat(4,1fr);position:relative}
+  .tl-steps > div{padding-right:32px;opacity:.2;transition:opacity .6s}
+  .tl.in .tl-steps > div{opacity:1}
+  .tl.in .tl-steps > div:nth-child(2){transition-delay:.7s}
+  .tl.in .tl-steps > div:nth-child(3){transition-delay:1.4s}
+  .tl.in .tl-steps > div:nth-child(4){transition-delay:2.1s}
+  .mark{width:1px;height:13px;background:var(--ink)}
+  .tl-steps > div:nth-child(n+3) .mark{background:var(--flag);width:3px}
+  .tl-steps .t{font-family:var(--mono);font-size:11px;color:var(--faint);margin:22px 0 10px}
+  .tl-steps h4{font-weight:500;font-size:18px;letter-spacing:-.01em;margin-bottom:8px}
+  .tl-steps p{font-size:14px;color:var(--mute);line-height:1.55}
+  .tl-steps .big{font-weight:600;font-size:52px;letter-spacing:-.04em;color:var(--flag);line-height:1;margin:2px 0 8px;font-variant-numeric:tabular-nums}
+
+  /* receipt */
+  .receipt{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .receipt .kv{padding:13px 18px}
+  .receipt .kv:last-child{border-bottom:0}
+  .receipt .ok{color:var(--ink)}
+  .receipt .top{display:flex;justify-content:space-between;padding:14px 18px;background:var(--soft);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--mute)}
+
+  /* cta + footer */
+  .cta{border-top:1px solid var(--line)}
+  .cta .btns{margin-top:30px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+  footer{padding:28px var(--pad);border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--mute)}
+  footer .mono{font-size:11px;color:var(--faint)}
+
+  /* investigation panel */
+  #panel{position:fixed;top:8px;right:8px;bottom:8px;width:min(440px,calc(100vw - 16px));z-index:45;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 60px rgba(24,24,27,.12);transform:translateX(calc(100% + 20px));transition:transform .6s cubic-bezier(.7,0,.2,1);padding:24px 26px;overflow-y:auto}
+  #panel.open{transform:none}
+  .p-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.12em}
+  .p-close{background:var(--soft);border:1px solid var(--line);color:var(--ink);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px}
+  .p-subj{margin-top:24px;font-family:var(--mono);font-size:20px;word-break:break-all}
+  .p-sub{margin-top:6px;font-size:12px;color:var(--faint);font-family:var(--mono)}
+  .dial{position:relative;margin:20px 0 4px;height:190px}
+  .dial svg{width:100%;height:100%}
+  .dial .val{position:absolute;left:0;right:0;top:76px;text-align:center}
+  .dial .val b{font-weight:600;font-size:60px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+  .dial .val small{display:block;font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.08em;margin-top:2px}
+  .level{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--flag)}
+  .cov{margin:20px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--mute);line-height:1.7}
+  .bars .fam{padding:9px 0}
+  .bars .fam .tr div{width:0;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+  .p-h{margin:26px 0 12px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--faint)}
+  .ev{display:grid;gap:12px}
+  .ev div{font-size:13px;line-height:1.5;color:var(--ink2);padding-left:12px;border-left:2px solid var(--line);opacity:0;transition:opacity .5s}
+  .ev div.in{opacity:1}
+  .ev div.i{border-left-color:var(--flag)}
+  .ev div em{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.14em;display:block;margin-bottom:2px;color:var(--mute)}
+  .ev div.i em{color:var(--flag)}
+  .p-foot{margin-top:26px;font-family:var(--mono);font-size:10px;color:var(--faint);line-height:1.7}
+
+  @media (max-width:980px){
+    .navlinks{display:none}
+    nav{grid-template-columns:1fr auto}
+    #hero{grid-template-columns:1fr}
+    .h-left{border-right:0;padding-top:104px}
+    .h-right{min-height:72vw;border-top:1px solid var(--line)}
+    .grid4{grid-template-columns:1fr}
+    .cell{border-right:0!important;border-bottom:1px solid var(--line)}
+    .split{grid-template-columns:1fr}
+    .tl-steps{grid-template-columns:1fr}
+    .tl-line,.tl-fill{display:none}
+    .tl-steps > div{padding:0 0 32px}
+    .cap-legend{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#"><svg viewBox="0 0 22 22" fill="none" stroke="#18181b" stroke-width="1.6"><circle cx="11" cy="11" r="9.2"/><path d="M1.8 11h18.4"/></svg>GHOSTNET</a>
+  <div class="navlinks">
+    <a href="#read">Product</a>
+    <a href="#method">Method</a>
+    <a href="#token">Tokens</a>
+    <a href="#chain">Receipts</a>
+  </div>
+  <a class="btn nav-r" href="#" onclick="document.querySelector('#q').focus();return false">Launch app</a>
+</nav>
+
+<header id="hero">
+  <div class="h-left">
+    <div class="count">Flagged this session <b id="flagged">0</b><span>· demo map</span></div>
+    <h1>The internet is full of ghosts. <span class="g">Find out who runs them.</span></h1>
+    <p class="lede">Coordinated accounts, bought engagement and the wallets behind them look like everyone else. GHOSTNET shows which ones aren't, and why.</p>
+    <form class="scan" id="scan">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
+      <input id="q" autocomplete="off" spellcheck="false" placeholder="@handle or 0x… token">
+      <button class="btn" type="submit">Investigate</button>
+    </form>
+    <ul class="rows">
+      <li><a href="#read"><span><span class="n">Ghost Score</span><span class="d">Is this account automated</span></span><span class="go">→</span></a></li>
+      <li><a href="#read"><span><span class="n">Ghost Graph</span><span class="d">Who is acting together</span></span><span class="go">→</span></a></li>
+      <li><a href="#token"><span><span class="n">Token Investigator</span><span class="d">Who is behind this token</span></span><span class="go">→</span></a></li>
+      <li><a href="#chain"><span><span class="n">Receipts</span><span class="d">Verify any report on Robinhood Chain</span></span><span class="go">→</span></a></li>
+    </ul>
+  </div>
+  <div class="h-right">
+    <canvas id="globe" aria-label="A rotating globe of simulated accounts. A scan ring passes over it and flags coordinated clusters."></canvas>
+    <div class="cap-note">Demo map · 16,000 simulated accounts · drag to rotate</div>
+    <div class="cap-legend"><span><i></i>account</span><span><i class="f"></i>coordinated</span><span><i class="l f"></i>shared behavior</span></div>
+  </div>
+</header>
+
+<div class="cover">
+  <p>Launch coverage. Public data only, every source cited.</p>
+  <div class="chips">
+    <span class="chip">Bluesky</span>
+    <span class="chip">Farcaster</span>
+    <span class="chip">Robinhood Chain</span>
+    <span class="chip off">X · opted-in accounts</span>
+    <span class="chip off">Base · planned</span>
+  </div>
+</div>
+
+<section id="read" class="center">
+  <div class="kicker">What it reads</div>
+  <h2>Four questions. <span class="g">Every answer shows its work.</span></h2>
+  <p class="sub">Each finding is labeled as observed, derived or inferred, and links back to the posts and transactions it came from.</p>
+  <div class="grid4">
+    <div class="cell">
+      <h3>Ghost Score</h3>
+      <p>Posting rhythm, repetition, engagement velocity and coordination, combined into one score with an interval.</p>
+      <div class="mock">
+        <div class="card">
+          <div class="hd"><span>@signal_daily</span><b>82 · 71–90</b></div>
+          <div class="fam"><span>Temporal automation</span><div class="tr"><div class="hot" style="width:86%"></div></div><span>86</span></div>
+          <div class="fam"><span>Network coordination</span><div class="tr"><div class="hot" style="width:81%"></div></div><span>81</span></div>
+          <div class="fam"><span>Content repetition</span><div class="tr"><div class="hot" style="width:74%"></div></div><span>74</span></div>
+          <div class="fam"><span>Engagement</span><div class="tr"><div style="width:58%"></div></div><span>58</span></div>
+          <div class="fam"><span>Follower patterns</span><div class="tr"><div style="width:43%"></div></div><span>43</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="cell">
+      <h3>Ghost Graph</h3>
+      <p>Accounts that repost the same obscure content within 20 minutes, again and again, normalized for popularity.</p>
+      <div class="mock">
+        <div class="card">
+          <svg id="mgraph" viewBox="0 0 400 150"></svg>
+          <div class="gcap"><span>21 accounts · 34 co-reposts</span><span>NPMI 0.81</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="cell">
+      <h3>Token Investigator</h3>
+      <p>Wallets that bought in the same blocks with money from the same source are grouped before you look at holders.</p>
+      <div class="mock">
+        <div class="row"><span class="l">0x41c…9e <span class="pill">blk +0</span></span><span class="pill f">Funder 0x7a3</span></div>
+        <div class="row"><span class="l">0x9b0…22 <span class="pill">blk +0</span></span><span class="pill f">Funder 0x7a3</span></div>
+        <div class="row"><span class="l">0x5de…c4 <span class="pill">blk +1</span></span><span class="pill f">Funder 0x7a3</span></div>
+        <div class="row"><span class="l">0x07a…f1 <span class="pill">blk +2</span></span><span class="pill f">Funder 0x7a3</span></div>
+        <div class="row"><span class="l">0xe31…8b <span class="pill">blk +9</span></span><span class="pill">Independent</span></div>
+      </div>
+    </div>
+    <div class="cell">
+      <h3>Receipts</h3>
+      <p>Every report is hashed and attested on Robinhood Chain, so a screenshot can always be checked against the original.</p>
+      <div class="mock">
+        <div class="card">
+          <div class="kv"><span>reportHash</span><span>0x9f3c…e1a7</span></div>
+          <div class="kv"><span>methodVersion</span><span>ghostscore-bsky-1.0.0</span></div>
+          <div class="kv"><span>dataCutoff</span><span>2026-11-04T21:00Z</span></div>
+          <div class="kv"><span>status</span><span>verified · not revoked</span></div>
+          <div class="kv"><span>network</span><span>Robinhood Chain · 4663</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="method" style="border-top:1px solid var(--line)">
+  <div class="split">
+    <div>
+      <div class="kicker">Method</div>
+      <h2>Facts are facts. <span class="g">Models are hypotheses.</span></h2>
+      <p class="sub">GHOSTNET never mixes the two. A score is never presented as proof, and anyone named in a report can dispute it.</p>
+    </div>
+    <div class="tiers">
+      <div class="tier">
+        <div class="t">OBSERVED</div>
+        <div><div class="ex">0x41c…9e sent 0.05 ETH to 0x7b2…a1 · block 106,123,447</div><div class="what">Read directly from a public source and linked to the transaction or post.</div></div>
+      </div>
+      <div class="tier">
+        <div class="t" style="color:var(--mute)">DERIVED</div>
+        <div><div class="ex">NPMI 0.81 across 34 co-reposts · window ±20 min</div><div class="what">Computed deterministically from observed data. Anyone can reproduce it.</div></div>
+      </div>
+      <div class="tier">
+        <div class="t" style="color:var(--flag)">INFERRED</div>
+        <div><div class="ex">automation signal 82 · 80% interval 71–90</div><div class="what">Model output, always shown with its uncertainty and coverage.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="token" style="border-top:1px solid var(--line)">
+  <div class="kicker">Token Investigator · Robinhood Chain · demo case</div>
+  <h2>Forty minutes from deploy <span class="g">to a manufactured trend.</span></h2>
+  <div class="tl" id="tl">
+    <div class="tl-line"></div><div class="tl-fill"></div>
+    <div class="tl-steps">
+      <div><div class="mark"></div><div class="t">T+00:00</div><h4>Contract deployed</h4><p>Deployer funded through one bridge deposit. Three earlier tokens, all with liquidity pulled within 72h.</p></div>
+      <div><div class="mark"></div><div class="t">T+00:06</div><h4>Liquidity added</h4><p>Uniswap pool seeded. LP tokens held by the deployer, unlocked.</p></div>
+      <div><div class="mark"></div><div class="t">T+00:09</div><div class="big">41</div><h4>wallets buy in 3 blocks</h4><p>All funded from one source in the prior hour. Cluster-adjusted top holder: 38% of supply.</p></div>
+      <div><div class="mark"></div><div class="t">T+00:40</div><div class="big">12</div><h4>accounts post the ticker</h4><p>Within 8 minutes. 4 of them published a wallet that sits inside the funding cluster.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="chain" style="border-top:1px solid var(--line)">
+  <div class="split">
+    <div>
+      <div class="kicker">Verifiable receipts</div>
+      <h2>Screenshots lie. <span class="g">Receipts don't.</span></h2>
+      <p class="sub">Anyone holding a report can check that it is authentic and unaltered. The chain stores a commitment, never a name or a score.</p>
+    </div>
+    <div class="receipt">
+      <div class="top"><span>EAS ATTESTATION</span><span>DEMO</span></div>
+      <div class="kv"><span>network</span><span>Robinhood Chain · 4663</span></div>
+      <div class="kv"><span>reportHash</span><span>0x9f3c…e1a7</span></div>
+      <div class="kv"><span>subjectCommitment</span><span>0x2b81…04dd</span></div>
+      <div class="kv"><span>methodVersion</span><span>ghostscore-bsky-1.0.0</span></div>
+      <div class="kv"><span>dataCutoff</span><span>2026-11-04T21:00Z</span></div>
+      <div class="kv"><span>status</span><span class="ok">verified · not revoked</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta center">
+  <h2>See who's really talking. <span class="g">Start with one handle.</span></h2>
+  <p class="sub">Free lookups at launch. No wallet needed to read a report.</p>
+  <div class="btns">
+    <a class="btn" href="#" onclick="window.scrollTo({top:0});setTimeout(()=>document.querySelector('#q').focus(),500);return false">Start an investigation</a>
+    <a class="btn ghost" href="#method">Read the method</a>
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 GHOSTNET · Signals, not verdicts.</span>
+  <span class="mono">All data on this page is illustrative demo data.</span>
+</footer>
+
+<aside id="panel" aria-hidden="true">
+  <div class="p-head"><span>INVESTIGATION · DEMO</span><button class="p-close" id="close" aria-label="Close">×</button></div>
+  <div class="p-subj" id="p-subj">@subject</div>
+  <div class="p-sub" id="p-sub">bluesky · ghostscore-bsky-1.0.0</div>
+  <div class="dial">
+    <svg viewBox="0 0 300 190">
+      <path d="M40 160 A110 110 0 1 1 260 160" fill="none" stroke="#efefee" stroke-width="2"/>
+      <path id="band" d="M40 160 A110 110 0 1 1 260 160" fill="none" stroke="rgba(229,70,31,.14)" stroke-width="12"/>
+      <path id="arc" d="M40 160 A110 110 0 1 1 260 160" fill="none" stroke="#e5461f" stroke-width="2"/>
+    </svg>
+    <div class="val"><b id="score">0</b><small id="ci">80% INTERVAL –</small></div>
+  </div>
+  <div class="level">STRONG AUTOMATION SIGNALS</div>
+  <div class="cov">COVERAGE &nbsp;412 posts · 2,000 followers sampled (2.1%)<br>DATA CUTOFF &nbsp;2026-11-04 21:00 UTC</div>
+  <div class="bars" id="bars"></div>
+  <div class="p-h">EVIDENCE</div>
+  <div class="ev" id="ev"></div>
+  <div class="p-foot">Signals, not verdicts. Scores estimate behavior consistent with automation or coordination. They are not proof of intent. Subjects can dispute any finding.</div>
+</aside>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let seed = 7;
+  const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const smooth = (e0,e1,x) => { const t = Math.max(0, Math.min(1, (x-e0)/(e1-e0))); return t*t*(3-2*t); };
+  const norm = (x,y,z) => { const l = Math.hypot(x,y,z) || 1; return [x/l,y/l,z/l]; };
+  const unit = () => { let x,y,z,l; do { x=rnd()*2-1; y=rnd()*2-1; z=rnd()*2-1; l=x*x+y*y+z*z; } while(l>1 || l<1e-4); return norm(x,y,z); };
+
+  // ---------- globe ----------
+  const cv = document.getElementById('globe');
+  const ctx = cv.getContext('2d');
+  const N = 16000, CAM = 3.6;
+  const P = new Float32Array(N*3), RAD = new Float32Array(N), CID = new Int16Array(N).fill(-1);
+  const LABELS = ['CO-REPOST','FUNDING','CO-BUY','CO-REPLY','CO-LINK','CO-TEXT','CO-REPOST','FUNDING','CO-BUY','CO-REPLY'];
+  const clusters = [];
+  let idx = 0;
+  for(let k=0;k<LABELS.length;k++){
+    let c; do { c = unit(); } while(Math.abs(c[1]) > .82);
+    const m = 16 + Math.floor(rnd()*20), members = [];
+    for(let j=0;j<m;j++){
+      const v = norm(c[0]+(rnd()-.5)*.3, c[1]+(rnd()-.5)*.3, c[2]+(rnd()-.5)*.3);
+      P.set(v, idx*3); RAD[idx] = 1; CID[idx] = k; members.push(idx); idx++;
+    }
+    const links = [];
+    for(const a of members){
+      const near = members.filter(b => b !== a).sort((b1,b2) => dist(a,b1) - dist(a,b2)).slice(0,3);
+      for(const b of near) if(a < b) links.push([a,b]);
+    }
+    clusters.push({c, m:members, links, label:LABELS[k], npmi:(.62+rnd()*.31).toFixed(2), t:-1e9, py:null});
+  }
+  function dist(a,b){ return Math.hypot(P[a*3]-P[b*3], P[a*3+1]-P[b*3+1], P[a*3+2]-P[b*3+2]); }
+  for(; idx<N; idx++){ P.set(unit(), idx*3); RAD[idx] = 1 - Math.pow(rnd(),3)*.09; }
+
+  const SX = new Float32Array(N), SY = new Float32Array(N), SZ = new Float32Array(N), WY = new Float32Array(N), NX = new Float32Array(N);
+  const LV = norm(-.55, .62, .56);
+  let W=0, H=0, S=0, CX=0, CY=0;
+  function resize(){
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W*DPR; cv.height = H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+    S = Math.min(W*.31, H*.37);
+    CX = W < 640 ? W*.5 : W*.42; CY = H*.48;
+  }
+  addEventListener('resize', resize); resize();
+
+  let yawDrag = 0, yawVel = 0, pitchDrag = 0, dragging = false, lx = 0, ly = 0;
+  cv.addEventListener('pointerdown', e => { dragging = true; lx = e.clientX; ly = e.clientY; cv.classList.add('drag'); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    yawVel = (e.clientX - lx)*.006; yawDrag += yawVel;
+    pitchDrag = Math.max(-.5, Math.min(.5, pitchDrag + (e.clientY - ly)*.004));
+    lx = e.clientX; ly = e.clientY;
+  });
+  const endDrag = () => { dragging = false; cv.classList.remove('drag'); };
+  cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', endDrag);
+
+  const flaggedEl = document.getElementById('flagged');
+  let flagged = 0;
+  const HOLD = 9000, FADE = 1500;
+  const vis = (cl, now) => { const a = now - cl.t; return a < 0 ? 0 : a < 450 ? a/450 : a < HOLD ? 1 : Math.max(0, 1 - (a-HOLD)/FADE); };
+  function flag(cl, now){
+    if(now - cl.t < HOLD + FADE) return;
+    cl.t = now; flagged += cl.m.length;
+    flaggedEl.textContent = flagged.toLocaleString();
+  }
+
+  const BUCKETS = 12, bucket = Array.from({length:BUCKETS}, () => []);
+  const t0 = performance.now();
+  let forced = null, introDone = false;
+
+  function frame(now){
+    const t = reduce ? 4200 : now - t0;
+    ctx.clearRect(0,0,W,H);
+    if(!dragging){ yawVel *= .95; yawDrag += yawVel; }
+    const yaw = t*.00009 + yawDrag, pitch = -.34 + pitchDrag;
+    const cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const ys = reduce ? .18 : Math.sin(t*.00052 - 1.2)*.95;
+    const appear = reduce ? 1 : smooth(0, 1200, t);
+
+    for(let i=0;i<N;i++){
+      const r = RAD[i], x = P[i*3]*r, y = P[i*3+1]*r, z = P[i*3+2]*r;
+      const x1 = x*cyw - z*syw, z1 = x*syw + z*cyw;
+      const y2 = y*cp - z1*sp, z2 = y*sp + z1*cp;
+      const s = CAM/(CAM - z2);
+      SX[i] = CX + x1*S*s; SY[i] = CY - y2*S*s; SZ[i] = z2; WY[i] = y2; NX[i] = x1;
+    }
+
+    // which clusters does the ring cross this frame
+    for(const cl of clusters){
+      const [x,y,z] = cl.c;
+      const z1 = x*syw + z*cyw, y2 = y*cp - z1*sp, z2 = y*sp + z1*cp;
+      if(cl.py !== null && (cl.py - ys)*(y2 - ys) <= 0 && z2 > .1 && t > 900) flag(cl, now);
+      cl.py = y2;
+    }
+    if(reduce) for(const cl of clusters) if(cl.t < 0) cl.t = now - 1000;
+    if(!introDone && t > 1100){
+      introDone = true;
+      let best = null, bz = -9;
+      for(const cl of clusters){
+        const [x,y,z] = cl.c, x1 = x*cyw - z*syw, z1 = x*syw + z*cyw, z2 = y*sp + z1*cp;
+        const score = z2 + (x1 > 0 ? .5 : 0);
+        if(score > bz){ bz = score; best = cl; }
+      }
+      flag(best, now);
+    }
+
+    // accounts
+    for(const b of bucket) b.length = 0;
+    const scanPts = [];
+    for(let i=0;i<N;i++){
+      if(CID[i] >= 0 && vis(clusters[CID[i]], now) > .05) continue;
+      const d = (SZ[i] + 1)/2;
+      if(SZ[i] > -.15 && Math.abs(WY[i] - ys) < .022){ scanPts.push(i); continue; }
+      const lam = Math.max(0, NX[i]*LV[0] + WY[i]*LV[1] + SZ[i]*LV[2]);
+      const a = (.1 + .78*Math.pow(lam, 1.2)) * (.3 + .7*d);
+      bucket[Math.min(BUCKETS-1, (a*BUCKETS)|0)].push(i);
+    }
+    for(let b=0;b<BUCKETS;b++){
+      const arr = bucket[b]; if(!arr.length) continue;
+      ctx.fillStyle = `rgba(24,24,27,${((b+.5)/BUCKETS)*appear})`;
+      for(const i of arr){ const sz = 1.1 + (SZ[i]+1)*.65; ctx.fillRect(SX[i]-sz/2, SY[i]-sz/2, sz, sz); }
+    }
+    ctx.fillStyle = `rgba(24,24,27,${.95*appear})`;
+    for(const i of scanPts){ ctx.fillRect(SX[i]-1.1, SY[i]-1.1, 2.2, 2.2); }
+
+    // scan ring: the logo's horizontal line, in 3D
+    const rr = Math.sqrt(Math.max(0, 1 - ys*ys));
+    const ringPt = a => { const x = rr*Math.cos(a), z = rr*Math.sin(a), s = CAM/(CAM - z); return [CX + x*S*s, CY - ys*S*s, z]; };
+    ctx.lineWidth = 1;
+    for(const front of [false,true]){
+      ctx.strokeStyle = front ? `rgba(24,24,27,${.7*appear})` : `rgba(24,24,27,${.14*appear})`;
+      ctx.beginPath();
+      let pen = false;
+      for(let k=0;k<=128;k++){
+        const [px,py,pz] = ringPt(k/128*Math.PI*2);
+        if((pz >= 0) === front){ pen ? ctx.lineTo(px,py) : ctx.moveTo(px,py); pen = true; } else pen = false;
+      }
+      ctx.stroke();
+    }
+    const yScreen = CY - ys*S;
+    const ex = rr*S;
+    ctx.strokeStyle = `rgba(24,24,27,${.18*appear})`;
+    ctx.beginPath(); ctx.moveTo(CX - ex - 6, yScreen); ctx.lineTo(CX - S*1.22, yScreen); ctx.moveTo(CX + ex + 6, yScreen); ctx.lineTo(CX + S*1.22, yScreen); ctx.stroke();
+    ctx.font = '500 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = `rgba(113,113,122,${appear})`;
+    ctx.fillText(`SCAN ${ys >= 0 ? '+' : '−'}${Math.abs(ys).toFixed(2)}`, CX + S*1.22 + 8, yScreen + 3.5);
+
+    // flagged clusters
+    let label = null;
+    for(const cl of clusters){
+      const v = vis(cl, now); if(v <= .05) continue;
+      ctx.lineWidth = 1;
+      for(const [a,b] of cl.links){
+        const d = (SZ[a] + SZ[b] + 2)/4;
+        ctx.strokeStyle = `rgba(229,70,31,${v*(.15 + .7*d)})`;
+        ctx.beginPath(); ctx.moveTo(SX[a],SY[a]); ctx.lineTo(SX[b],SY[b]); ctx.stroke();
+      }
+      for(const i of cl.m){
+        const d = (SZ[i] + 1)/2, sz = 2 + 2.4*d;
+        ctx.fillStyle = `rgba(229,70,31,${v*(.25 + .75*d)})`;
+        ctx.fillRect(SX[i]-sz/2, SY[i]-sz/2, sz, sz);
+      }
+      const zc = cl.m.reduce((s,i)=>s+SZ[i],0)/cl.m.length;
+      if(zc > .05 && v > .3 && (!label || cl.t > label.cl.t)){
+        const sx = cl.m.reduce((s,i)=>s+SX[i],0)/cl.m.length, sy = cl.m.reduce((s,i)=>s+SY[i],0)/cl.m.length;
+        if(sx > CX - S*.15) label = {cl, v, sx, sy};
+      }
+    }
+    if(forced && vis(forced, now) > .3) {
+      const cl = forced, sx = cl.m.reduce((s,i)=>s+SX[i],0)/cl.m.length, sy = cl.m.reduce((s,i)=>s+SY[i],0)/cl.m.length;
+      label = {cl, v:vis(cl, now), sx, sy};
+    }
+
+    if(label){
+      const {cl, v, sx, sy} = label;
+      const right = W - (CX + S*1.08) > 150;
+      const lxp = right ? CX + S*1.08 : Math.max(CX - S*1.08, 175);
+      const lyp = Math.max(70, Math.min(H - 90, sy - 26));
+      ctx.strokeStyle = `rgba(229,70,31,${v*.8})`; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(lxp + (right ? -10 : 10), lyp); ctx.lineTo(lxp + (right ? 132 : -132), lyp); ctx.stroke();
+      ctx.textAlign = right ? 'left' : 'right';
+      ctx.font = '500 10.5px "JetBrains Mono", monospace';
+      ctx.fillStyle = `rgba(229,70,31,${v})`;
+      ctx.fillText(`${cl.label} CLUSTER`, lxp, lyp - 8);
+      ctx.fillStyle = `rgba(24,24,27,${v})`;
+      ctx.fillText(`${cl.m.length} accounts · NPMI ${cl.npmi}`, lxp, lyp + 17);
+      ctx.fillStyle = `rgba(161,161,170,${v})`;
+      ctx.fillText('DERIVED · DEMO', lxp, lyp + 32);
+      ctx.textAlign = 'left';
+    }
+
+    if(!reduce) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // ---------- capability mock: graph ----------
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; };
+  (() => {
+    const g = document.getElementById('mgraph'); seed = 21;
+    const organic = Array.from({length:46}, () => [12 + rnd()*376, 12 + rnd()*126]);
+    const cl = Array.from({length:12}, () => { const a = rnd()*6.28, d = Math.sqrt(rnd())*34; return [262 + Math.cos(a)*d*1.4, 74 + Math.sin(a)*d]; });
+    organic.forEach((p,i) => { const q = organic[(i*7+3)%organic.length]; if(Math.hypot(p[0]-q[0],p[1]-q[1]) < 90) el('line',{x1:p[0],y1:p[1],x2:q[0],y2:q[1],stroke:'#e7e7ea','stroke-width':1},g); });
+    for(let i=0;i<cl.length;i++) for(let j=i+1;j<cl.length;j++) if((i+j)%3) el('line',{x1:cl[i][0],y1:cl[i][1],x2:cl[j][0],y2:cl[j][1],stroke:'rgba(229,70,31,.35)','stroke-width':.8},g);
+    organic.forEach(p => el('rect',{x:p[0]-1.5,y:p[1]-1.5,width:3,height:3,fill:'#a1a1aa'},g));
+    cl.forEach(p => el('rect',{x:p[0]-2.5,y:p[1]-2.5,width:5,height:5,fill:'#e5461f'},g));
+  })();
+
+  // ---------- investigation panel ----------
+  const panel = document.getElementById('panel');
+  const arc = document.getElementById('arc'), band = document.getElementById('band');
+  const L = arc.getTotalLength();
+  arc.style.strokeDasharray = L; arc.style.strokeDashoffset = L;
+  band.style.strokeDasharray = `0 ${L}`;
+  const families = [['Temporal automation',.86,1],['Network coordination',.81,1],['Content repetition',.74,1],['Engagement',.58,0],['Follower patterns',.43,0],['Profile & history',.22,0]];
+  const evid = [
+    ['OBSERVED','','Posted 412 times in 14 days with no gap longer than 2h 10m.'],
+    ['DERIVED','','Inter-post timing entropy 1.9 bits. The human cohort median is 4.6.'],
+    ['DERIVED','','Co-reposted 34 posts with 21 accounts inside ±20 min. NPMI 0.81.'],
+    ['DERIVED','','63% of posts are near-duplicates of other accounts\' posts (MinHash ≥ 0.8).'],
+    ['INFERRED','i','Automation signal 82, 80% interval 71–90. Model ghostscore-bsky-1.0.0.'],
+  ];
+  function openPanel(subject){
+    const isToken = /^0x[0-9a-fA-F]{6,}/.test(subject);
+    document.getElementById('p-subj').textContent = subject || '@signal_daily';
+    document.getElementById('p-sub').textContent = isToken ? 'robinhood chain · 4663 · token-investigator-1.0.0' : 'bluesky · ghostscore-bsky-1.0.0';
+    panel.classList.add('open'); panel.setAttribute('aria-hidden','false');
+
+    let best = clusters[0], bz = -9;
+    for(const cl of clusters){ const z = cl.m.reduce((s,i)=>s+SZ[i],0)/cl.m.length; if(z > bz){ bz = z; best = cl; } }
+    best.t = -1e9; flag(best, performance.now()); forced = best;
+
+    const score = 82, lo = 71, hi = 90;
+    arc.style.transition = 'none'; arc.style.strokeDashoffset = L;
+    band.style.transition = 'none'; band.style.strokeDasharray = `0 ${L}`;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      arc.style.transition = 'stroke-dashoffset 1.6s cubic-bezier(.2,.8,.2,1)';
+      arc.style.strokeDashoffset = L*(1-score/100);
+      band.style.transition = 'stroke-dasharray 1.6s cubic-bezier(.2,.8,.2,1) .3s';
+      band.style.strokeDashoffset = -L*lo/100;
+      band.style.strokeDasharray = `${L*(hi-lo)/100} ${L}`;
+    }));
+    const s = document.getElementById('score'), start = performance.now();
+    (function cnt(n){ const p = Math.min(1,(n-start)/1600), e = 1-Math.pow(1-p,3); s.textContent = Math.round(score*e); if(p<1) requestAnimationFrame(cnt); else document.getElementById('ci').textContent = `80% INTERVAL ${lo}–${hi}`; })(start);
+
+    const bars = document.getElementById('bars');
+    bars.innerHTML = families.map(([n,v,h]) => `<div class="fam"><span>${n}</span><div class="tr"><div class="${h?'hot':''}" data-w="${v*100}"></div></div><span>${Math.round(v*100)}</span></div>`).join('');
+    setTimeout(() => bars.querySelectorAll('.tr div').forEach(d => d.style.width = d.dataset.w + '%'), 200);
+    const ev = document.getElementById('ev');
+    ev.innerHTML = evid.map(([t,c,x]) => `<div class="${c}"><em>${t}</em>${x}</div>`).join('');
+    ev.querySelectorAll('div').forEach((d,i) => setTimeout(() => d.classList.add('in'), 700 + i*180));
+  }
+  document.getElementById('scan').addEventListener('submit', e => { e.preventDefault(); openPanel(document.getElementById('q').value.trim()); });
+  document.getElementById('close').addEventListener('click', () => { panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); forced = null; });
+
+  const io = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold:.3});
+  io.observe(document.getElementById('tl'));
+})();
+</script>
+</body>
+</html>
