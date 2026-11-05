@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GHOSTNET extension privacy policy</title>
+<style>
+  body { margin: 0; color: #18181b; background: #fff; font: 400 15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 24px 96px; }
+  h1 { font-size: 32px; letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 8px; }
+  h2 { font-size: 18px; margin: 36px 0 8px; letter-spacing: -0.01em; }
+  p, li { color: #3f3f46; }
+  em { color: #71717a; font-style: normal; font-size: 13px; }
+  a { color: #18181b; text-underline-offset: 3px; overflow-wrap: anywhere; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th { text-align: left; font: 500 11px/1 ui-monospace, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase; color: #a1a1aa; padding: 10px 12px 10px 0; border-bottom: 1px solid #e7e7ea; }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid #e7e7ea; vertical-align: top; color: #3f3f46; }
+  .top { font: 600 15px/1 ui-sans-serif, system-ui; display: flex; gap: 8px; align-items: center; margin-bottom: 40px; text-decoration: none; }
+</style></head>
+<body><main>
+<a class="top" href="./"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#18181b" stroke-width="1.6"><circle cx="11" cy="11" r="9.2"/><path d="M1.8 11h18.4"/></svg>GHOSTNET</a>
+<h1>GHOSTNET browser extension — privacy policy</h1>
+<p><em>Last updated: November 5, 2026.</em></p>
+<p>GHOSTNET ("we") publishes the GHOSTNET extension for Chrome. This policy covers what the extension handles and what our server receives from it. The extension is built to work with as little of your data as possible.</p>
+<h2>What the extension reads</h2>
+<table><thead><tr><th>Where</th><th>What it reads</th><th>When</th></tr></thead><tbody><tr><td>x.com / twitter.com</td><td>The handle in the address of the page you are on. If you turn on <strong>timeline chips</strong>, also the handles of post authors visible on screen.</td><td>Always on X (profile badge can be turned off)</td></tr><tr><td>The tab where you click the GHOSTNET toolbar button</td><td>That tab's address, once, to show what it is</td><td>Only when you click the button</td></tr><tr><td>Any website</td><td>The hostname and whether it was loaded over http or https</td><td>Only if you turn on the <strong>site lens</strong> and grant access to all sites</td></tr><tr><td>Supported block explorers (Etherscan, Basescan, Arbiscan, Polygonscan, Blockscout)</td><td>The wallet address in the page address</td><td>Only if you turn on the <strong>explorer lens</strong> and grant access to those sites</td></tr><tr><td>GhostSign</td><td>The transaction data you paste</td><td>Only when you paste it</td></tr><tr><td>Any website (GhostSign guard)</td><td>Wallet signature requests the site sends to your wallet (transactions, typed data, messages), the site's hostname, and the chain ID</td><td>Only if you turn on the <strong>GhostSign guard</strong> and grant access to all sites</td></tr></tbody></table>
+<p>The extension does not read page content, form fields, passwords, cookies, or your browsing history. It never asks for a seed phrase or private key. The guard sees requests on their way to your wallet, but it never signs, changes or sends anything; your wallet still asks you to confirm.</p>
+<h2>What is sent to the GHOSTNET server</h2>
+<p>Requests go only to the GHOSTNET server configured in the extension (the default GHOSTNET server, or a server you set yourself in Settings).</p>
+<ul><li><strong>X handles</strong> from the cases above, to fetch scores and reports, and the handle you ask to analyze.</li><li><strong>Hostnames</strong> (never full addresses or paths) when you click "Check threat lists", or for every site you open if you turn on automatic threat-list lookups.</li><li><strong>Wallet addresses</strong> you look up or open on an explorer, and addresses in a pasted transaction when you click "Check addresses".</li><li><strong>A transaction and the sending address</strong>, when you click "Simulate" in GhostSign, or when the GhostSign guard checks a transaction. The server runs it through a public blockchain node's simulation method and does not store it.</li><li><strong>Your API key</strong>, if you add one, in a request header.</li></ul>
+<p>Pasted transaction data is otherwise decoded inside the extension. Typed-data and message signatures are decoded only inside the extension and never sent.</p>
+<p>The server keeps standard request logs (time, route, status, IP address) for up to 30 days for security and rate limiting. GHOSTNET's own application logs leave out queried handles, hostnames, addresses and transaction contents. The hosting provider's access logs may include request paths (which contain the handle, hostname or address looked up) and are kept for up to 30 days. Results are cached on the server so repeated lookups are fast; cached results are public data (public X posts, public threat lists, public blockchain data), not information about you.</p>
+<p>The server, in turn, queries public sources: the official X API, phishing lists (MetaMask, ScamSniffer, Polkadot.js), domain registries (RDAP), Google Safe Browsing or Web Risk (if configured), Blockscout, public blockchain RPC nodes (PublicNode, dRPC, Robinhood Chain), GeckoTerminal and CoinGecko. It sends them only the handle, hostname, address, token or transaction being looked up.</p>
+<h2>What is stored in your browser</h2>
+<ul><li><strong>Settings</strong> and your <strong>API key</strong> (if you add one) in the extension's local storage. Web pages can't read it; GHOSTNET's in-page scripts are denied access to it where Chrome supports that.</li><li><strong>Cached results</strong> in session storage, which Chrome clears when you close the browser. "Clear cached results" in Settings clears them immediately.</li></ul>
+<h2>Accounts and deletion</h2>
+<p>GHOSTNET has no user accounts beyond optional API keys. A key is stored on our server only as a one-way hash, with a label and an optional linked wallet address.</p>
+<ul><li><strong>Sign out</strong> removes the key from this browser.</li><li><strong>Revoke key and delete account</strong> (Settings) disables the key everywhere and deletes its label and linked wallet. The credit ledger (amounts, dates and report references) is kept for accounting and is no longer linked to any personal detail.</li><li>Uninstalling the extension deletes everything it stored in your browser.</li></ul>
+<p>To ask for anything else to be deleted, open an issue at <a href="https://github.com/ironiamison/ghostnet/issues">https://github.com/ironiamison/ghostnet/issues</a> (do not include your API key).</p>
+<h2>What we don't do</h2>
+<ul><li>No selling or sharing of data with advertisers or data brokers.</li><li>No analytics, ads or third-party tracking code in the extension.</li><li>No use of data for credit-worthiness or lending decisions.</li><li>No remotely hosted code: everything the extension runs ships inside it.</li></ul>
+<h2>About the results</h2>
+<p>GHOSTNET reports are statistical signals computed from public data. A Ghost Score is not a finding that a person is a bot, a scammer, or acting in bad faith. Website and wallet checks report what the listed sources say. Not being listed does not make a site or wallet safe.</p>
+<h2>Changes and contact</h2>
+<p>We will update this page and the "Last updated" date when this policy changes. Questions: <a href="https://github.com/ironiamison/ghostnet/issues">https://github.com/ironiamison/ghostnet/issues</a>.</p>
+<h2>Chrome Web Store User Data disclosure</h2>
+<p>The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements.</p>
+</main></body></html>
