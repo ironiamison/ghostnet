@@ -201,6 +201,22 @@
     .cap-legend{display:none}
   }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  .xt{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(40px,6vw,100px);align-items:center}
+  .xtl{margin-top:36px;list-style:none;padding:0;border-bottom:1px solid var(--line)}
+  .xtl button{display:flex;justify-content:space-between;align-items:center;gap:16px;width:100%;padding:16px 0;border:0;border-top:1px solid var(--line);background:none;font:inherit;text-align:left;cursor:pointer;color:var(--mute)}
+  .xtl .n{display:block;font-size:15px;font-weight:500}
+  .xtl .d{display:block;margin-top:4px;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(24,24,27,.38)}
+  .xtl button:hover .n,.xtl button[aria-selected="true"] .n{color:var(--ink)}
+  .xtl .go{font-size:13px;opacity:0;transition:opacity .2s}
+  .xtl button[aria-selected="true"] .go{opacity:1;color:var(--flag)}
+  .xt-note{margin-top:22px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);display:flex;flex-wrap:wrap;gap:6px 18px}
+  .xt-note a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+  .xt-stage{position:relative;display:grid;place-items:center;padding:clamp(28px,5vw,56px);background:var(--soft);border:1px solid var(--line);border-radius:18px}
+  .xt-stage img{grid-area:1/1;width:min(100%,340px);aspect-ratio:396/716;object-fit:cover;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 30px 70px rgba(0,0,0,.1);opacity:0;transition:opacity .35s}
+  .xt-stage img.on{opacity:1}
+  .xt-cap{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(24,24,27,.38)}
+  @media (max-width:980px){.xt{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -212,8 +228,9 @@
     <a href="#method">Method</a>
     <a href="#token">Tokens</a>
     <a href="#chain">Receipts</a>
+    <a href="#extension">Extension</a>
   </div>
-  <a class="btn nav-r" href="#" onclick="document.querySelector('#q').focus();return false">Launch app</a>
+  <a class="btn nav-r" href="#" onclick="window.scrollTo({top:0});const q=document.querySelector('#q');q.value=q.value.trim()||'@signal_daily';document.getElementById('scan').requestSubmit();return false">Try the demo</a>
 </nav>
 
 <header id="hero">
@@ -364,11 +381,47 @@
   </div>
 </section>
 
+<section id="extension" style="border-top:1px solid var(--line)">
+  <div class="xt">
+    <div>
+      <div class="kicker">Chrome extension</div>
+      <h2>GHOSTNET, right where <span class="g">you're about to trust something.</span></h2>
+      <p class="sub">A Ghost Score under X profile names, and a side panel that checks the website, wallet or transaction in front of you. GhostSign reads a signature request before your wallet opens and says what it really does.</p>
+      <ul class="xtl" role="tablist" aria-label="Extension features">
+        <li><button role="tab" aria-selected="true" data-shot="score"><span><span class="n">Ghost Score on X</span><span class="d">Under every profile name, with the evidence</span></span><span class="go">→</span></button></li>
+        <li><button role="tab" aria-selected="false" data-shot="promotions"><span><span class="n">Token calls</span><span class="d">Explicit promotions, priced from posting to now</span></span><span class="go">→</span></button></li>
+        <li><button role="tab" aria-selected="false" data-shot="website"><span><span class="n">Website checks</span><span class="d">Phishing lists, kept apart from guesses</span></span><span class="go">→</span></button></li>
+        <li><button role="tab" aria-selected="false" data-shot="wallet"><span><span class="n">Wallet X-RAY</span><span class="d">Relationships from recorded transactions only</span></span><span class="go">→</span></button></li>
+        <li><button role="tab" aria-selected="false" data-shot="guard"><span><span class="n">GhostSign</span><span class="d">Stops a risky signature before your wallet opens</span></span><span class="go">→</span></button></li>
+      </ul>
+      <div class="xt-note"><span>Developer preview · Chrome Web Store listing coming</span><a href="privacy.html">Privacy policy</a></div>
+    </div>
+    <div class="xt-stage">
+      <img class="on" src="extension/score.png" alt="GHOSTNET extension: Ghost Score on X" loading="lazy" data-shot="score">
+      <img src="extension/promotions.png" alt="GHOSTNET extension: Token calls" loading="lazy" data-shot="promotions">
+      <img src="extension/website.png" alt="GHOSTNET extension: Website checks" loading="lazy" data-shot="website">
+      <img src="extension/wallet.png" alt="GHOSTNET extension: Wallet X-RAY" loading="lazy" data-shot="wallet">
+      <img src="extension/guard.png" alt="GHOSTNET extension: GhostSign" loading="lazy" data-shot="guard">
+      <div class="xt-cap">Real extension screens · test data</div>
+    </div>
+  </div>
+</section>
+<script>
+  (() => {
+    const tabs = document.querySelectorAll('#extension [role="tab"]');
+    const shots = document.querySelectorAll('#extension img[data-shot]');
+    tabs.forEach(t => t.addEventListener('click', () => {
+      tabs.forEach(x => x.setAttribute('aria-selected', String(x === t)));
+      shots.forEach(s => s.classList.toggle('on', s.dataset.shot === t.dataset.shot));
+    }));
+  })();
+</script>
+
 <section class="cta center">
   <h2>See who's really talking. <span class="g">Start with one handle.</span></h2>
   <p class="sub">Free lookups at launch. No wallet needed to read a report.</p>
   <div class="btns">
-    <a class="btn" href="#" onclick="window.scrollTo({top:0});setTimeout(()=>document.querySelector('#q').focus(),500);return false">Start an investigation</a>
+    <a class="btn" href="#" onclick="window.scrollTo({top:0});const q=document.querySelector('#q');q.value=q.value.trim()||'@signal_daily';document.getElementById('scan').requestSubmit();return false">Try a demo investigation</a>
     <a class="btn ghost" href="#method">Read the method</a>
   </div>
 </section>
